@@ -30,7 +30,7 @@ WORKDIR /app
 COPY --from=build /repo/pnpm-workspace.yaml /repo/pnpm-lock.yaml /repo/package.json ./
 COPY --from=build /repo/apps/api/package.json apps/api/
 COPY --from=build /repo/packages/shared/package.json packages/shared/
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 
 # Inject the generated Prisma client into the pnpm virtual store
 COPY --from=build /prisma-generated /prisma-generated
@@ -45,4 +45,4 @@ COPY --from=build /repo/apps/api/prisma apps/api/prisma
 
 EXPOSE 3000
 WORKDIR /app/apps/api
-CMD ["sh", "-c", "pnpm prisma:deploy && pnpm prisma:seed && node dist/main.js"]
+CMD ["sh", "-c", "pnpm prisma:deploy && pnpm prisma:seed && node dist/src/main.js"]

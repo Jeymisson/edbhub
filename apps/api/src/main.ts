@@ -17,6 +17,7 @@ async function bootstrap() {
   )
 
   app.useLogger(app.get(Logger))
+  app.enableShutdownHooks()
 
   await app.register(fastifyCookie)
   await app.register(fastifyCors, {

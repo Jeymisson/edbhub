@@ -3,6 +3,8 @@ import { AuthProvider } from '@/features/auth/AuthProvider'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { StudentsListPage } from '@/features/students/StudentsListPage'
+import { CreateStudentPage } from '@/features/students/CreateStudentPage'
+import { EditStudentPage } from '@/features/students/EditStudentPage'
 import { Toaster } from 'sonner'
 
 export default function App() {
@@ -16,6 +18,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <StudentsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/students/new"
+            element={
+              <ProtectedRoute>
+                <CreateStudentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/students/:id"
+            element={
+              <ProtectedRoute>
+                <EditStudentPage />
               </ProtectedRoute>
             }
           />

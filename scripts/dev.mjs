@@ -154,19 +154,21 @@ function tearInfraDown() {
 
 const subcommand = process.argv[2]
 
-if (subcommand === 'down') {
-  tearInfraDown()
-} else if (subcommand === 'infra') {
-  bringInfraUp()
-  await waitForPostgres()
-  ensureEnv()
-  log('infra ready')
-} else if (!subcommand) {
+async function prepare() {
   bringInfraUp()
   await waitForPostgres()
   ensureEnv()
   runOrFail('applying migrations', PNPM, ['--filter', '@edb/api', 'exec', 'prisma', 'migrate', 'deploy'])
   runOrFail('seeding bootstrap admin', PNPM, ['--filter', '@edb/api', 'prisma:seed'])
+}
+
+if (subcommand === 'down') {
+  tearInfraDown()
+} else if (subcommand === 'infra') {
+  await prepare()
+  log('infra ready — run `pnpm test` or `pnpm --filter @edb/api dev` next')
+} else if (!subcommand) {
+  await prepare()
   startServers()
 } else {
   fail(`unknown subcommand: ${subcommand}. Use one of: (none) | infra | down`)

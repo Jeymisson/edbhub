@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { loginSchema, type LoginInput } from '@edb/shared'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js'
@@ -27,6 +28,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async login(
     @Body(new ZodValidationPipe(loginSchema)) body: LoginInput,
     @Res({ passthrough: true }) reply: FastifyReply,

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
-import { APP_FILTER } from '@nestjs/core'
+import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { LoggerModule } from 'nestjs-pino'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js'
 import { PrismaModule } from './prisma/prisma.module.js'
 import { RedisModule } from './redis/redis.module.js'
@@ -34,11 +35,15 @@ import { StudentsModule } from './students/students.module.js'
         },
       },
     }),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     PrismaModule,
     RedisModule,
     AuthModule,
     StudentsModule,
   ],
-  providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+  ],
 })
 export class AppModule {}

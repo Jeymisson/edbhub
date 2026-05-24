@@ -28,7 +28,7 @@ A migration roda e o admin é semeado automaticamente no primeiro boot do contai
 | E-mail | `admin@escoladobreno.test` |
 | Senha | `AdminTest123!` |
 
-Para mudar antes do primeiro boot, exporte `ADMIN_EMAIL` / `ADMIN_PASSWORD` ou edite o `.env`. O seed é idempotente — re-rodar não duplica registros e re-aplica o hash da senha se mudar.
+Para mudar antes do primeiro boot, exporte `ADMIN_EMAIL` / `ADMIN_PASSWORD` ou edite o `.env`. O seed é idempotente — rodar de novo não duplica registros e reaplica o hash da senha se mudar.
 
 ## O que foi entregue
 
@@ -63,7 +63,7 @@ A justificativa de cada exclusão está em [CONTEXT.md](./CONTEXT.md#o-que-não-
 
 ## Ferramenta de IA principal
 
-**Claude Code** (Anthropic). Usado para discutir decisões arquiteturais, escrever ADRs, planejar a implementação e gerar a maior parte do código sob revisão interativa. Decisões são minhas; o agente foi par de programação, não autônomo.
+**Claude Code** (Anthropic). Usado para discutir decisões arquiteturais, escrever ADRs, planejar a implementação e gerar a maior parte do código sob revisão interativa. Decisões são minhas; o agente atuou como pair programmer, não autônomo.
 
 ## Estrutura do repositório
 
@@ -103,18 +103,18 @@ pnpm test
 
 `pnpm test` chama `pretest` antes (que sobe db + redis, aplica migrations e semeia o admin via `pnpm dev:infra`) e em seguida roda os testes nos workspaces. O hook é idempotente — se a infra já estiver de pé, vira no-op de poucos segundos.
 
-Para reproduzir o CI inteiro localmente antes de empurrar:
+Para reproduzir o CI inteiro localmente antes do push:
 
 ```bash
 pnpm ci:local
 ```
 
-Roda install + prisma generate + shared build + lint + typecheck + build + test, na mesma ordem do `.github/workflows/ci.yml`, com as variáveis de aplicação (`DATABASE_URL`, `ADMIN_EMAIL`, etc.) explicitamente removidas do shell para flagrar bugs de carregamento de `.env` antes do push.
+Roda install + prisma generate + shared build + lint + typecheck + build + test, na mesma ordem do `.github/workflows/ci.yml`, com as variáveis de aplicação (`DATABASE_URL`, `ADMIN_EMAIL`, etc.) explicitamente removidas do shell para expor bugs de carregamento de `.env` antes do push.
 
 76 testes no total:
 
 - **`@edb/shared`** (33 unitários): CPF (10), telefone (7), schemas Zod (16).
-- **`@edb/api`** (26 unitários + 17 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService` (inclui equalização de timing), `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me`, CRUD completo de alunos (401 em todas as rotas sem sessão, 400 sem eco do valor inválido, 409 genérico em conflito) e rate limit no `/auth/login` (10/min).
+- **`@edb/api`** (26 unitários + 17 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService` (inclui equalização de timing), `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me`, CRUD completo de alunos (401 em todas as rotas sem sessão, 400 sem devolver o valor inválido, 409 genérico em conflito) e rate limit no `/auth/login` (10/min).
 
 ## Desenvolvimento local
 

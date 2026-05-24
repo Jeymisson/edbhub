@@ -36,7 +36,7 @@ export class AuthController {
     const sid = await this.sessions.create({ adminId }, ttl)
     reply.setCookie(this.cookieName, sid, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: (process.env.WEB_ORIGIN ?? '').startsWith('https://'),
       sameSite: 'strict',
       path: '/',
       maxAge: ttl,

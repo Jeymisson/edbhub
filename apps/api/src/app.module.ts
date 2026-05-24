@@ -3,6 +3,7 @@ import { APP_FILTER } from '@nestjs/core'
 import { LoggerModule } from 'nestjs-pino'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js'
 import { PrismaModule } from './prisma/prisma.module.js'
+import { RedisModule } from './redis/redis.module.js'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PrismaModule } from './prisma/prisma.module.js'
       },
     }),
     PrismaModule,
+    RedisModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })

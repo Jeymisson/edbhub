@@ -1,3 +1,7 @@
+// Loads apps/api/.env when present (dev / CI).
+// In production Docker the env vars come from compose at the container level
+// and this is a no-op (no .env file inside the image).
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { hash, verify } from '@node-rs/argon2'
 

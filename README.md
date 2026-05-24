@@ -107,15 +107,16 @@ pnpm --filter @edb/shared test
 - **`@edb/shared`** (31 unitários): CPF (10), telefone (7), schemas Zod (14)
 - **`@edb/api`** (25 unitários + 16 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService`, `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me` e CRUD completo de alunos (incluindo 401 em todas as rotas sem sessão, 400 sem eco do valor inválido, e 409 genérico em conflito).
 
-## Desenvolvimento local sem Docker
+## Desenvolvimento local
 
 ```bash
-docker compose up -d db redis
-cp .env.example .env
 pnpm install
-pnpm --filter @edb/shared build
-pnpm --filter @edb/api exec prisma migrate deploy
-pnpm --filter @edb/api prisma:seed
-pnpm --filter @edb/api dev    # http://localhost:3000
-pnpm --filter @edb/web dev    # http://localhost:5173
+pnpm dev
 ```
+
+`pnpm dev` é um wrapper Node ([`scripts/dev.mjs`](./scripts/dev.mjs)) que faz tudo em um comando: detecta `docker compose` (v2) ou `docker-compose` (v1), sobe `db` + `redis` via [`compose.dev.yml`](./compose.dev.yml) (que expõe as portas para o host — em produção elas ficam só na rede interna do compose, ver [ADR-0005](./docs/adr/0005-pii-handling.md)), aplica migrations, semeia o admin, e roda `apps/api` (porta 3000) e `apps/web` (porta 5173) em paralelo com prefixos coloridos `[api]` / `[web]`. Ctrl-C derruba os servidores; a infra fica de pé entre sessões.
+
+Comandos auxiliares:
+
+- `pnpm dev:infra` — só `db` + `redis`, sem subir os servidores (útil pra rodar testes).
+- `pnpm dev:infra:down` — derruba `db` + `redis` quando terminar.

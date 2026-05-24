@@ -8,9 +8,9 @@
   },
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm -r --parallel dev",
-    "dev:infra": "docker compose -f docker-compose.yml -f compose.dev.yml up -d db redis",
-    "dev:infra:down": "docker compose -f docker-compose.yml -f compose.dev.yml down",
+    "dev": "node scripts/dev.mjs",
+    "dev:infra": "node scripts/dev.mjs infra",
+    "dev:infra:down": "node scripts/dev.mjs down",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint apps packages"

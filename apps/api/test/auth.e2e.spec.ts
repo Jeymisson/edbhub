@@ -14,7 +14,6 @@ const ADMIN_PASSWORD = 'TestPassw0rd!'
 describe('Auth (e2e)', () => {
   let app: NestFastifyApplication
   let prisma: PrismaService
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let _redis: RedisService
 
   beforeAll(async () => {

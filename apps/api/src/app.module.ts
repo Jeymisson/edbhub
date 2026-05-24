@@ -5,6 +5,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js'
 import { PrismaModule } from './prisma/prisma.module.js'
 import { RedisModule } from './redis/redis.module.js'
 import { AuthModule } from './auth/auth.module.js'
+import { StudentsModule } from './students/students.module.js'
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AuthModule } from './auth/auth.module.js'
     PrismaModule,
     RedisModule,
     AuthModule,
+    StudentsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })

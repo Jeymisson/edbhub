@@ -1,0 +1,121 @@
+# edbhub — Painel administrativo da Escola do Breno
+
+Sistema interno de back-office para a equipe administrativa gerenciar o cadastro de alunos. CRUD com tratamento explícito de PII (CPF, e-mail, telefone), autenticação de admin via sessão server-side, e testes focados em validação e autorização.
+
+Domínio em [CONTEXT.md](./CONTEXT.md). Decisões arquiteturais em [docs/adr/](./docs/adr/).
+
+## Setup
+
+Pré-requisitos: Docker.
+
+```bash
+docker compose up --build
+```
+
+Sobe o stack inteiro do zero — Postgres, Redis, API e Web. Em alguns minutos a aplicação está pronta em:
+
+- Web: <http://localhost:5173>
+- API: <http://localhost:3000>
+
+Não precisa criar `.env` — os defaults estão embutidos no `docker-compose.yml`. Para sobrescrever, crie um `.env` na raiz copiando de [`.env.example`](./.env.example).
+
+## Acesso como admin
+
+A migration roda e o admin é semeado automaticamente no primeiro boot do container `api` via `prisma:seed`. Credenciais padrão (definidas em `.env.example` / defaults do compose):
+
+| Campo | Valor |
+| --- | --- |
+| E-mail | `admin@escoladobreno.test` |
+| Senha | `AdminTest123!` |
+
+Para mudar antes do primeiro boot, exporte `ADMIN_EMAIL` / `ADMIN_PASSWORD` ou edite o `.env`. O seed é idempotente — re-rodar não duplica registros e re-aplica o hash da senha se mudar.
+
+## O que foi entregue
+
+### Must-have
+
+- [x] Login admin (sessão server-side em Redis, cookie opaco `httpOnly` + `SameSite=strict`)
+- [x] CRUD completo do aluno: listar, adicionar, editar, apagar
+- [x] Validação server-side dos campos sensíveis (CPF com dígitos verificadores, e-mail, telefone em E.164)
+- [x] Testes de validação e autorização (Vitest, 72 testes — unitários no `@edb/shared` e `@edb/api`, mais e2e em `@edb/api` via Fastify inject)
+- [x] `docker compose up` funcionando do zero
+- [x] README + CONTEXT.md + 5 ADRs (mínimo era 2)
+
+### Nice-to-have feitos
+
+- [x] Busca na listagem (nome, e-mail, CPF)
+- [x] Soft delete com índices `UNIQUE` parciais (`WHERE "deletedAt" IS NULL`) — justificado em [ADR-0004](./docs/adr/0004-student-modeling.md)
+- [x] Testes de API end-to-end (auth + students CRUD)
+- [x] ADRs adicionais (5 no total)
+
+### Fora do escopo (intencional)
+
+Os itens abaixo foram **conscientemente não implementados**, conforme orientação do brief:
+
+- Audit log / histórico de edições
+- Regras de negócio sobre alunos (transições de status, "não pode editar cancelado", etc.)
+- Triggers, jobs, workflows agendados
+- State machines
+- UI bonita / branding / design polido
+
+A justificativa de cada exclusão está em [CONTEXT.md](./CONTEXT.md#o-que-não-está-no-domínio).
+
+## Ferramenta de IA principal
+
+**Claude Code** (Anthropic). Usado para discutir decisões arquiteturais, escrever ADRs, planejar a implementação e gerar a maior parte do código sob revisão interativa. Decisões são minhas; o agente foi par de programação, não autônomo.
+
+## Estrutura do repositório
+
+```
+apps/
+  api/          NestJS + Fastify + Prisma + PostgreSQL
+  web/          Vite + React 19 + Tailwind v4 + shadcn/ui
+packages/
+  shared/       Zod schemas + utilitários de domínio (CPF, telefone)
+docs/adr/       Architecture Decision Records (5)
+BRIEF.md        Brief original do teste
+CONTEXT.md      Glossário do domínio e decisões de modelagem
+CLAUDE.md       Convenções para ferramentas de IA neste repositório
+docker-compose.yml
+```
+
+## ADRs
+
+| #    | Título                                                                                       |
+| ---- | -------------------------------------------------------------------------------------------- |
+| 0001 | [Stack](./docs/adr/0001-stack.md) — NestJS, Prisma, monorepo pnpm, Vitest                            |
+| 0002 | [Autenticação](./docs/adr/0002-auth-strategy.md) — sessões opacas em Redis                           |
+| 0003 | [Validação com Zod](./docs/adr/0003-validation-with-zod.md) — schemas compartilhados entre FE e BE   |
+| 0004 | [Modelagem do aluno](./docs/adr/0004-student-modeling.md) — soft delete, normalização, UUID          |
+| 0005 | [Tratamento de PII](./docs/adr/0005-pii-handling.md) — redação, formato de erro, credenciais         |
+
+## Rodando os testes
+
+Pré-requisitos: Postgres + Redis acessíveis. O modo mais simples é subir só essas dependências via compose:
+
+```bash
+docker compose up -d db redis
+pnpm install
+pnpm --filter @edb/shared build
+pnpm --filter @edb/api exec prisma migrate deploy
+pnpm --filter @edb/api test
+pnpm --filter @edb/shared test
+```
+
+72 testes no total:
+
+- **`@edb/shared`** (31 unitários): CPF (10), telefone (7), schemas Zod (14)
+- **`@edb/api`** (25 unitários + 16 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService`, `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me` e CRUD completo de alunos (incluindo 401 em todas as rotas sem sessão, 400 sem eco do valor inválido, e 409 genérico em conflito).
+
+## Desenvolvimento local sem Docker
+
+```bash
+docker compose up -d db redis
+cp .env.example .env
+pnpm install
+pnpm --filter @edb/shared build
+pnpm --filter @edb/api exec prisma migrate deploy
+pnpm --filter @edb/api prisma:seed
+pnpm --filter @edb/api dev    # http://localhost:3000
+pnpm --filter @edb/web dev    # http://localhost:5173
+```

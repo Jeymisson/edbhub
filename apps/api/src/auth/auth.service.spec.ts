@@ -44,4 +44,20 @@ describe('AuthService.login', () => {
       expect(message).not.toContain('topsecret')
     }
   })
+
+  it('runs argon2 verify even when the admin is unknown (timing equalization)', async () => {
+    const prismaMissing = { admin: { findUnique: vi.fn().mockResolvedValue(null) } }
+    const service = new AuthService(prismaMissing as any)
+
+    // Warm the dummy-hash cache so the measured call only pays the verify cost.
+    await service.login('warmup@example.com', 'x').catch(() => {})
+
+    const start = performance.now()
+    await service.login('nobody@example.com', 'x').catch(() => {})
+    const elapsed = performance.now() - start
+
+    // argon2 verify on @node-rs/argon2 costs ~10–30ms; a DB-only miss is sub-millisecond.
+    // If the not-found path skipped verify, elapsed would be effectively zero.
+    expect(elapsed).toBeGreaterThan(5)
+  })
 })

@@ -10,6 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
+// Side-effect import: triggers @fastify/cookie's module augmentation of
+// FastifyRequest['cookies'] so req.cookies is typed without a manual cast.
+import '@fastify/cookie'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { loginSchema, type LoginInput } from '@edb/shared'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js'
@@ -49,8 +52,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(204)
   async logout(@Req() req: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
-    const sid = (req as FastifyRequest & { cookies?: Record<string, string | undefined> })
-      .cookies?.[this.cookieName]
+    const sid = req.cookies?.[this.cookieName]
     if (sid) await this.sessions.destroy(sid)
     reply.clearCookie(this.cookieName, { path: '/' })
   }

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { hash } from '@node-rs/argon2'
+import { hash, verify } from '@node-rs/argon2'
 
 const prisma = new PrismaClient()
 
@@ -10,15 +10,22 @@ async function main() {
     throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set to seed the bootstrap admin.')
   }
 
-  const passwordHash = await hash(password)
+  const normalizedEmail = email.toLowerCase()
+  const existing = await prisma.admin.findUnique({ where: { email: normalizedEmail } })
 
+  if (existing && (await verify(existing.passwordHash, password))) {
+    console.log(`Admin already seeded with current password: ${normalizedEmail}`)
+    return
+  }
+
+  const passwordHash = await hash(password)
   await prisma.admin.upsert({
-    where: { email: email.toLowerCase() },
-    create: { email: email.toLowerCase(), passwordHash },
+    where: { email: normalizedEmail },
+    create: { email: normalizedEmail, passwordHash },
     update: { passwordHash },
   })
 
-  console.log(`Seeded admin: ${email.toLowerCase()}`)
+  console.log(`Seeded admin: ${normalizedEmail}`)
 }
 
 main()

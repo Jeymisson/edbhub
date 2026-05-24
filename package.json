@@ -11,6 +11,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:infra": "node scripts/dev.mjs infra",
     "dev:infra:down": "node scripts/dev.mjs down",
+    "pretest": "pnpm dev:infra",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint apps packages scripts"

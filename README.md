@@ -98,9 +98,10 @@ CLAUDE.md             Convenções para ferramentas de IA neste repositório
 
 ```bash
 pnpm install
-pnpm dev:infra        # sobe db + redis, aplica migrations, semeia admin
-pnpm test             # roda todos os workspaces
+pnpm test
 ```
+
+`pnpm test` chama `pretest` antes (que sobe db + redis, aplica migrations e semeia o admin via `pnpm dev:infra`) e em seguida roda os testes nos workspaces. O hook é idempotente — se a infra já estiver de pé, vira no-op de poucos segundos.
 
 76 testes no total:
 

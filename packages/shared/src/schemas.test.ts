@@ -24,6 +24,16 @@ describe('loginSchema', () => {
   it('rejects missing password', () => {
     expect(loginSchema.safeParse({ email: 'a@b.com', password: '' }).success).toBe(false)
   })
+
+  it('rejects passwords longer than 256 chars (argon2 DoS guard)', () => {
+    const huge = 'x'.repeat(257)
+    expect(loginSchema.safeParse({ email: 'a@b.com', password: huge }).success).toBe(false)
+  })
+
+  it('accepts passwords at the 256-char boundary', () => {
+    const boundary = 'x'.repeat(256)
+    expect(loginSchema.safeParse({ email: 'a@b.com', password: boundary }).success).toBe(true)
+  })
 })
 
 describe('studentCreateSchema', () => {

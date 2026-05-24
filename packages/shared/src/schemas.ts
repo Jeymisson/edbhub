@@ -35,7 +35,9 @@ const phoneSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, 'required'),
+  // argon2 hashes whatever it receives; cap the input so an attacker can't
+  // submit a multi-megabyte payload as a DoS amplifier.
+  password: z.string().min(1, 'required').max(256, 'too long'),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

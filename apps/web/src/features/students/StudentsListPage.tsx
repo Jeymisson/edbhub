@@ -138,7 +138,7 @@ export function StudentsListPage() {
             <DialogTitle>Remover aluno</DialogTitle>
             <DialogDescription>
               {pendingDelete && (
-                <>Confirma a remoção de <strong>{pendingDelete.nome}</strong>? O registro será mantido em histórico.</>
+                <>Confirma a remoção de <span className="font-semibold">{pendingDelete.nome}</span>? O registro será mantido em histórico.</>
               )}
             </DialogDescription>
           </DialogHeader>

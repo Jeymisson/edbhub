@@ -48,10 +48,13 @@ export function StudentsListPage() {
   const filtered = (data ?? []).filter((s) => {
     const q = query.trim().toLowerCase()
     if (!q) return true
+    const digits = q.replace(/\D/g, '')
+    // CPF check only when the query actually contains digits — otherwise
+    // `''.includes('')` is true for every row and the filter degenerates.
     return (
       s.nome.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q) ||
-      s.cpf.includes(q.replace(/\D/g, ''))
+      (digits.length > 0 && s.cpf.includes(digits))
     )
   })
 

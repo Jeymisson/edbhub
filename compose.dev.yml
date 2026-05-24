@@ -1,0 +1,19 @@
+# Dev-only overlay: exposes db and redis to the host so `pnpm --filter @edb/api dev`
+# (running on the host, not inside a container) can reach them.
+#
+# The production compose (docker-compose.yml) keeps both services on the private
+# Docker network without host ports — see ADR-0005, "Exposição de rede".
+# This file lifts that restriction *only* for local development.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f compose.dev.yml up -d db redis
+# Or via the wrapper script:
+#   pnpm dev:infra
+
+services:
+  db:
+    ports:
+      - "5432:5432"
+  redis:
+    ports:
+      - "6379:6379"

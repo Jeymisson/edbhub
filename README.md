@@ -37,7 +37,7 @@ Para mudar antes do primeiro boot, exporte `ADMIN_EMAIL` / `ADMIN_PASSWORD` ou e
 - [x] Login admin (sessão server-side em Redis, cookie opaco `httpOnly` + `SameSite=strict`)
 - [x] CRUD completo do aluno: listar, adicionar, editar, apagar
 - [x] Validação server-side dos campos sensíveis (CPF com dígitos verificadores, e-mail, telefone em E.164)
-- [x] Testes de validação e autorização (Vitest, 72 testes — unitários no `@edb/shared` e `@edb/api`, mais e2e em `@edb/api` via Fastify inject)
+- [x] Testes de validação e autorização (Vitest, 76 testes — unitários no `@edb/shared` e `@edb/api`, mais e2e em `@edb/api` via Fastify inject)
 - [x] `docker compose up` funcionando do zero
 - [x] README + CONTEXT.md + 5 ADRs (mínimo era 2)
 
@@ -45,7 +45,8 @@ Para mudar antes do primeiro boot, exporte `ADMIN_EMAIL` / `ADMIN_PASSWORD` ou e
 
 - [x] Busca na listagem (nome, e-mail, CPF)
 - [x] Soft delete com índices `UNIQUE` parciais (`WHERE "deletedAt" IS NULL`) — justificado em [ADR-0004](./docs/adr/0004-student-modeling.md)
-- [x] Testes de API end-to-end (auth + students CRUD)
+- [x] Testes de API end-to-end (auth + students CRUD + rate limit)
+- [x] Lint configurado (ESLint flat config, sem warnings)
 - [x] ADRs adicionais (5 no total)
 
 ### Fora do escopo (intencional)
@@ -68,15 +69,19 @@ A justificativa de cada exclusão está em [CONTEXT.md](./CONTEXT.md#o-que-não-
 
 ```
 apps/
-  api/          NestJS + Fastify + Prisma + PostgreSQL
-  web/          Vite + React 19 + Tailwind v4 + shadcn/ui
+  api/                NestJS + Fastify + Prisma + PostgreSQL
+  web/                Vite + React 19 + Tailwind v4 + shadcn/ui
 packages/
-  shared/       Zod schemas + utilitários de domínio (CPF, telefone)
-docs/adr/       Architecture Decision Records (5)
-BRIEF.md        Brief original do teste
-CONTEXT.md      Glossário do domínio e decisões de modelagem
-CLAUDE.md       Convenções para ferramentas de IA neste repositório
-docker-compose.yml
+  shared/             Zod schemas + utilitários de domínio (CPF, telefone)
+scripts/
+  dev.mjs             Orquestrador de dev cross-platform (one-command setup)
+docs/adr/             Architecture Decision Records (5)
+docker-compose.yml    Stack de produção (db, redis, api, web)
+compose.dev.yml       Overlay de dev — expõe db e redis no host
+eslint.config.mjs     Flat config (ESLint 10 + typescript-eslint)
+BRIEF.md              Brief original do teste
+CONTEXT.md            Glossário do domínio e decisões de modelagem
+CLAUDE.md             Convenções para ferramentas de IA neste repositório
 ```
 
 ## ADRs
@@ -91,21 +96,16 @@ docker-compose.yml
 
 ## Rodando os testes
 
-Pré-requisitos: Postgres + Redis acessíveis. O modo mais simples é subir só essas dependências via compose:
-
 ```bash
-docker compose up -d db redis
 pnpm install
-pnpm --filter @edb/shared build
-pnpm --filter @edb/api exec prisma migrate deploy
-pnpm --filter @edb/api test
-pnpm --filter @edb/shared test
+pnpm dev:infra        # sobe db + redis, aplica migrations, semeia admin
+pnpm test             # roda todos os workspaces
 ```
 
-72 testes no total:
+76 testes no total:
 
-- **`@edb/shared`** (31 unitários): CPF (10), telefone (7), schemas Zod (14)
-- **`@edb/api`** (25 unitários + 16 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService`, `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me` e CRUD completo de alunos (incluindo 401 em todas as rotas sem sessão, 400 sem eco do valor inválido, e 409 genérico em conflito).
+- **`@edb/shared`** (33 unitários): CPF (10), telefone (7), schemas Zod (16).
+- **`@edb/api`** (26 unitários + 17 e2e): `ZodValidationPipe`, `AllExceptionsFilter`, `SessionService`, `AuthService` (inclui equalização de timing), `SessionGuard`, `StudentsService`, mais e2e cobrindo login/logout/`/auth/me`, CRUD completo de alunos (401 em todas as rotas sem sessão, 400 sem eco do valor inválido, 409 genérico em conflito) e rate limit no `/auth/login` (10/min).
 
 ## Desenvolvimento local
 
@@ -118,5 +118,5 @@ pnpm dev
 
 Comandos auxiliares:
 
-- `pnpm dev:infra` — só `db` + `redis`, sem subir os servidores (útil pra rodar testes).
+- `pnpm dev:infra` — prepara db + redis + migrations + seed, sem subir os servidores.
 - `pnpm dev:infra:down` — derruba `db` + `redis` quando terminar.

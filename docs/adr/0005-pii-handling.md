@@ -15,7 +15,7 @@ O sistema armazena PII (`nome`, `email`, `cpf`, `telefone`) e credenciais de adm
   - Falhas de validação informam o campo e a razão (ex.: `cpf: 'invalid check digit'`), mas nunca devolvem o valor submetido.
   - Conflitos de unicidade em `cpf` ou `email` devolvem `409 { message: 'Conflict' }`, sem nomear o campo que colidiu.
 - **Credenciais de admin.** Senhas hasheadas com argon2id em todo caminho de inserção. Texto puro nunca é armazenado, logado ou devolvido.
-- **Exposição de rede.** PostgreSQL e Redis são alcançáveis apenas pela rede privada do Docker; nenhum dos dois mapeia porta para o host no `docker-compose.yml`.
+- **Exposição de rede.** PostgreSQL e Redis são alcançáveis apenas pela rede privada do Docker; nenhum dos dois mapeia porta para o host no `docker-compose.yml`. Existe um overlay `compose.dev.yml` que expõe as portas localmente — é opt-in (precisa ser passado explicitamente via `-f`), não é aplicado em produção, e é o que o orquestrador `pnpm dev` usa para desenvolvimento.
 - **Sem criptografia em coluna** para PII. Justificativa abaixo.
 
 ## Alternativas consideradas

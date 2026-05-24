@@ -14,14 +14,15 @@ Admin panel for student management. Greenfield CRUD with PII (CPF, email, telefo
 ## Commands
 
 ```bash
-docker compose up              # full stack from zero
+docker compose up --build      # full prod-shaped stack from zero
 pnpm install                   # install workspaces
-pnpm --filter @edb/api dev     # api dev server
-pnpm --filter @edb/web dev     # web dev server
-pnpm --filter @edb/api test    # api tests (Vitest)
-pnpm --filter @edb/api prisma migrate dev
-pnpm lint
-pnpm typecheck
+pnpm dev                       # one-command local dev (infra + api + web)
+pnpm dev:infra                 # only db + redis + migrate + seed (for tests)
+pnpm dev:infra:down            # stop db + redis
+pnpm test                      # all workspaces
+pnpm lint                      # ESLint flat config
+pnpm typecheck                 # tsc --noEmit across workspaces
+pnpm build                     # production builds
 ```
 
 ## React conventions (React 19)
@@ -78,43 +79,35 @@ pnpm typecheck
 ## Folder structure
 
 ```
-edb-ms/
+edbhub/
 ├── apps/
 │   ├── api/                 # NestJS + Fastify
-│   │   ├── src/
-│   │   │   ├── auth/
-│   │   │   ├── students/
-│   │   │   ├── prisma/
-│   │   │   ├── redis/
-│   │   │   └── main.ts
-│   │   ├── prisma/schema.prisma
-│   │   └── test/
+│   │   ├── src/{auth,students,prisma,redis,common}/
+│   │   ├── prisma/{schema.prisma, seed.ts, migrations/}
+│   │   └── test/            # e2e (auth, students, rate-limit)
 │   └── web/                 # Vite + React 19
-│       ├── src/
-│       │   ├── features/    # students/, auth/
-│       │   ├── components/  # shadcn-based, reusable
-│       │   └── lib/
-│       └── index.html
+│       └── src/{features/{auth,students}, components/ui, lib}/
 ├── packages/
-│   └── shared/              # Zod schemas, domain types, CPF utils
-├── docs/
-│   └── adr/                 # Architecture Decision Records
-├── docker-compose.yml
-├── pnpm-workspace.yaml
+│   └── shared/              # Zod schemas + CPF / phone utils
+├── scripts/
+│   └── dev.mjs              # one-command dev orchestrator
+├── docs/adr/                # 5 ADRs (see index below)
+├── docker-compose.yml       # production stack
+├── compose.dev.yml          # dev overlay (host ports for db + redis)
+├── eslint.config.mjs        # ESLint 10 flat config
 ├── BRIEF.md
 ├── CONTEXT.md
+├── CLAUDE.md
 └── README.md
 ```
 
-## ADR index (`docs/adr/`)
+## ADRs
 
-To be written as decisions are cemented. Planned:
-
-- ADR-001 — Stack: NestJS + Fastify, Prisma, Vite + React 19, pnpm monorepo
-- ADR-002 — Auth: server-side Redis sessions over JWT
-- ADR-003 — Validation: Zod schemas in `packages/shared`, shared FE/BE
-- ADR-004 — Student modeling: fields, soft delete decision, normalization
-- ADR-005 — PII handling: CPF normalization, log redaction, transport security
+- [ADR-0001 — Stack](./docs/adr/0001-stack.md)
+- [ADR-0002 — Autenticação](./docs/adr/0002-auth-strategy.md)
+- [ADR-0003 — Validação com Zod](./docs/adr/0003-validation-with-zod.md)
+- [ADR-0004 — Modelagem do aluno](./docs/adr/0004-student-modeling.md)
+- [ADR-0005 — Tratamento de PII](./docs/adr/0005-pii-handling.md)
 
 ## Working style
 

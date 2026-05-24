@@ -52,6 +52,28 @@ describe('Students (e2e)', () => {
     expect(res.statusCode).toBe(401)
   })
 
+  it('rejects unauthenticated create with 401', async () => {
+    const res = await app.inject({ method: 'POST', url: '/students', payload: {} })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it('rejects unauthenticated update with 401', async () => {
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/students/00000000-0000-0000-0000-000000000000',
+      payload: {},
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it('rejects unauthenticated delete with 401', async () => {
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/students/00000000-0000-0000-0000-000000000000',
+    })
+    expect(res.statusCode).toBe(401)
+  })
+
   const valid = {
     nome: 'Ana Souza',
     email: 'e2e-ana@example.com',

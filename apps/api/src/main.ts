@@ -1,3 +1,7 @@
+// Loads apps/api/.env when present (host dev / tests).
+// No-op when env vars are already set, so it doesn't override docker compose
+// values in production.
+import 'dotenv/config'
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import {

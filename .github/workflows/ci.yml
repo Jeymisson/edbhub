@@ -28,6 +28,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Two artifacts have to exist before lint/typecheck can resolve imports:
+      #   - @prisma/client (Prisma's postinstall is blocked by pnpm 10 by default)
+      #   - @edb/shared dist/ (consumers import via the package's "exports" field)
+      - name: Generate Prisma client
+        run: pnpm --filter @edb/api exec prisma generate
+
+      - name: Build @edb/shared
+        run: pnpm --filter @edb/shared build
+
       - name: Lint
         run: pnpm lint
 

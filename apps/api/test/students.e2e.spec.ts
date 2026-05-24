@@ -15,7 +15,7 @@ async function login(app: NestFastifyApplication, email: string, password: strin
     url: '/auth/login',
     payload: { email, password },
   })
-  return (res.headers['set-cookie'] as string).split(';')[0]
+  return (res.headers['set-cookie'] as string).split(';')[0]!
 }
 
 describe('Students (e2e)', () => {

@@ -83,7 +83,7 @@ describe('Auth (e2e)', () => {
       url: '/auth/login',
       payload: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
     })
-    const cookie = (login.headers['set-cookie'] as string).split(';')[0]
+    const cookie = (login.headers['set-cookie'] as string).split(';')[0]!
     const me = await app.inject({
       method: 'GET',
       url: '/auth/me',
@@ -99,7 +99,7 @@ describe('Auth (e2e)', () => {
       url: '/auth/login',
       payload: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
     })
-    const cookie = (login.headers['set-cookie'] as string).split(';')[0]
+    const cookie = (login.headers['set-cookie'] as string).split(';')[0]!
 
     const logout = await app.inject({
       method: 'POST',

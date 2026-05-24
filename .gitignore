@@ -9,6 +9,8 @@ coverage/
 *.log
 *.tsbuildinfo
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 prisma/migrations/dev.db*

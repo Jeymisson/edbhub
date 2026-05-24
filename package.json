@@ -13,6 +13,7 @@
     "dev:infra:down": "node scripts/dev.mjs down",
     "pretest": "pnpm dev:infra",
     "test": "pnpm -r test",
+    "ci:local": "node scripts/ci-local.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint apps packages scripts"
   },

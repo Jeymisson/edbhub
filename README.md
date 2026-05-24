@@ -103,6 +103,14 @@ pnpm test
 
 `pnpm test` chama `pretest` antes (que sobe db + redis, aplica migrations e semeia o admin via `pnpm dev:infra`) e em seguida roda os testes nos workspaces. O hook é idempotente — se a infra já estiver de pé, vira no-op de poucos segundos.
 
+Para reproduzir o CI inteiro localmente antes de empurrar:
+
+```bash
+pnpm ci:local
+```
+
+Roda install + prisma generate + shared build + lint + typecheck + build + test, na mesma ordem do `.github/workflows/ci.yml`, com as variáveis de aplicação (`DATABASE_URL`, `ADMIN_EMAIL`, etc.) explicitamente removidas do shell para flagrar bugs de carregamento de `.env` antes do push.
+
 76 testes no total:
 
 - **`@edb/shared`** (33 unitários): CPF (10), telefone (7), schemas Zod (16).
